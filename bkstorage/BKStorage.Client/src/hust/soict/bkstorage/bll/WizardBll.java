@@ -5,9 +5,13 @@
  */
 package hust.soict.bkstorage.bll;
 
+import hust.soict.bkstorage.dal.Dal;
 import hust.soict.bkstorage.dal.WizardDal;
 import hust.soict.bkstorage.exception.FileEmptyException;
+import hust.soict.bkstorage.exception.OptionsMappingException;
+import hust.soict.bkstorage.exception.SnapshotMappingException;
 import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  *
@@ -19,8 +23,12 @@ public class WizardBll {
     public WizardBll() {
     }
 
+    public void init() throws ClassNotFoundException, SQLException,
+            OptionsMappingException, IOException, SnapshotMappingException {
+        new Dal().init();
+    }
 
-    public String readServerName() throws  FileEmptyException, IOException {
+    public String readServerName() throws FileEmptyException, IOException {
         WizardDal wizardDal = new WizardDal();
         String serverName = wizardDal.readServerName();
         if (serverName == null) {
@@ -32,28 +40,28 @@ public class WizardBll {
     public String readPort() throws IOException, FileEmptyException {
         WizardDal wizardDal = new WizardDal();
         String port = wizardDal.readPort();
-        if (port == null){
+        if (port == null) {
             throw new FileEmptyException("Tập tin rỗng");
         }
         return port;
     }
-    
-    public String readUserName() throws FileEmptyException, IOException{
+
+    public String readUserName() throws FileEmptyException, IOException {
         WizardDal wizardDal = new WizardDal();
         String userName = wizardDal.readUserName();
-        if (userName == null){
+        if (userName == null) {
             throw new FileEmptyException("Tập tin rỗng");
         }
         return userName;
     }
-    
-public String readPassword() throws FileEmptyException, IOException{
+
+    public String readPassword() throws FileEmptyException, IOException {
         WizardDal wizardDal = new WizardDal();
         String password = wizardDal.readPassword();
-        if (password == null){
+        if (password == null) {
             throw new FileEmptyException("Tập tin rỗng");
         }
         return password;
-}
+    }
 
 }

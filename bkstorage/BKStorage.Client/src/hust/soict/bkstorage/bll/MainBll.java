@@ -5,14 +5,19 @@
  */
 package hust.soict.bkstorage.bll;
 
+import hust.soict.bkstorage.dal.Dal;
 import hust.soict.bkstorage.dal.MainDal;
 import hust.soict.bkstorage.exception.DownloadExeption;
+import hust.soict.bkstorage.exception.OptionsMappingException;
+import hust.soict.bkstorage.exception.SnapshotMappingException;
 import hust.soict.bkstorage.remoteentity.MyFile;
 import hust.soict.bkstorage.utils.FileUtil;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -24,17 +29,60 @@ public class MainBll extends Bll {
     }
 
     /**
+     * Người dùng tắt chương trình
+     *
+     * @throws OptionsMappingException
+     * @throws IOException
+     */
+    public void shutoff() throws OptionsMappingException, IOException {
+        Dal.storeConfig();
+        Dal.storeOptions();
+    }
+
+    /**
+     * Kiểm tra trạng thái autosync
+     *
+     * @return
+     */
+    public boolean isAutoSync() {
+        return new MainDal().isAutoSync();
+    }
+
+    /**
+     * Tắt chế độ đồng bộ tự động
+     */
+    public void disableAutoSync() {
+        new MainDal().setAutoSync(false);
+    }
+
+    /**
+     * Bật chế độ đồng bộ tự động
+     */
+    public void enableAutoSync() {
+        new MainDal().setAutoSync(true);
+    }
+
+    /**
+     * Thực hiện khi người dùng đăng xuất
+     *
+     * @throws hust.soict.bkstorage.exception.SnapshotMappingException
+     * @throws hust.soict.bkstorage.exception.OptionsMappingException
+     */
+    public void logout() throws SnapshotMappingException, OptionsMappingException {
+        MainDal mainDal = new MainDal();
+        mainDal.clearSnapshot();
+        mainDal.clearUserOptions();
+    }
+
+    /**
      * Tải tất cả các file của người dùng từ server về Hàm này được gọi khi
      * người dùng đăng nhập lần đầu
      *
-     * @throws hust.soict.k57.it3650.exception.DownloadExeption
+     * @throws hust.soict.bkstorage.exception.DownloadExeption
      */
     public void downloadAll() throws DownloadExeption {
-
+        MainDal mainDal = new MainDal();
         try {
-            FileUtil.makeSnapshot();
-            MainDal mainDal = new MainDal();
-
             // Lấy danh sách tất cả các file
             ArrayList<MyFile> list = mainDal.getAllFileByParent(id, -1);
 
@@ -46,15 +94,14 @@ public class MainBll extends Bll {
             for (MyFile f : list) {
                 download(f);
             }
-        } catch (IOException ex) {
+        } catch (IOException | SnapshotMappingException ex) {
             try {
-                FileUtil.delete(FileUtil.makeSnapshot());
-            } catch (IOException ex1) {
-                throw new DownloadExeption("Không download được dữ liệu");
+                mainDal.clearSnapshot();
+            } catch (SnapshotMappingException ex1) {
+                Logger.getLogger(MainBll.class.getName()).log(Level.SEVERE, null, ex1);
             }
-            throw new DownloadExeption("Không download được dữ liệu");
+            throw new DownloadExeption("Không download được dữ liệu. Error: " + ex.getMessage());
         }
-
     }
 
     /**
@@ -62,7 +109,7 @@ public class MainBll extends Bll {
      *
      * @param f
      */
-    private void download(MyFile f) throws RemoteException, IOException {
+    private void download(MyFile f) throws RemoteException, IOException, SnapshotMappingException {
 
         MainDal mainDal = new MainDal();
         if (!f.isDerectory()) {
@@ -88,8 +135,8 @@ public class MainBll extends Bll {
      *
      * @param clientFile
      */
-    private void upload(File clientFile) throws RemoteException, IOException, ClassNotFoundException {
-
+    private void upload(File clientFile) throws RemoteException, IOException,
+            SnapshotMappingException {
         MainDal mainDal = new MainDal();
         String path = FileUtil.getCommonPath(clientFile);
         boolean isDirectory = clientFile.isDirectory();
@@ -128,9 +175,10 @@ public class MainBll extends Bll {
      *
      * @throws java.rmi.RemoteException
      * @throws java.lang.ClassNotFoundException
+     * @throws hust.soict.bkstorage.exception.SnapshotMappingException
      */
-    public void sync() throws RemoteException, IOException, ClassNotFoundException {
-
+    public void sync() throws RemoteException, IOException, ClassNotFoundException,
+            SnapshotMappingException {
         try {
             MainDal mainDal = new MainDal();
 
@@ -176,8 +224,8 @@ public class MainBll extends Bll {
      * @throws java.rmi.RemoteException
      * @throws java.lang.ClassNotFoundException
      */
-    public void sync(File clientFile) throws RemoteException, IOException, ClassNotFoundException {
-
+    public void sync(File clientFile) throws RemoteException, IOException,
+            ClassNotFoundException, SnapshotMappingException {
         MainDal mainDal = new MainDal();
         // Tìm file trên server tương ứng với f
         MyFile f = mainDal.getFileByPath(FileUtil.getCommonPath(clientFile), id);
@@ -260,8 +308,6 @@ public class MainBll extends Bll {
                     upload(clientFile);
                 }
             }
-
         }
     }
-
 }

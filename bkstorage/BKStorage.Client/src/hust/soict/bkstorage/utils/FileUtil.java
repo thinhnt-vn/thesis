@@ -73,32 +73,30 @@ public class FileUtil {
      * @return
      */
     public static File getUserDirectory() {
-
         String homeDirectoryPath = System.getProperty("user.home");
         File homeDirectory = new File(homeDirectoryPath);
         File result = new File(homeDirectory, FileConstant.USER_DIR);
         return result;
-
     }
 
-    /**
-     * Tạo ra file snapshot
-     *
-     * @return
-     * @throws IOException
-     */
-    public static File makeSnapshot() throws IOException {
-
-        // Tạo thư mục chứa các file nếu chưa được tạo
-        File parent = new File(FileConstant.FILE_DIR);
-        parent.mkdir();
-
-        // Tạo và trả lại file cấu hình trong thư mục
-        File result = new File(parent, FileConstant.SNAPSHOT_FILE_NAME);
-        result.createNewFile();
-        return result;
-
-    }
+//    /**
+//     * Tạo ra file snapshot
+//     *
+//     * @return
+//     * @throws IOException
+//     */
+//    public static File makeSnapshot() throws IOException {
+//
+//        // Tạo thư mục chứa các file nếu chưa được tạo
+//        File parent = new File(FileConstant.FILE_DIR);
+//        parent.mkdir();
+//
+//        // Tạo và trả lại file cấu hình trong thư mục
+//        File result = new File(parent, FileConstant.SNAPSHOT_FILE_NAME);
+//        result.createNewFile();
+//        return result;
+//
+//    }
 
     /**
      * AutoSyncFile là 1 cờ trạng thái đồng bộ của người dùng Nều file này tồn
@@ -106,7 +104,7 @@ public class FileUtil {
      *
      * @return
      */
-    public static File makeAutoSyncFile() {
+    public static File makeaaAutoSyncFile() {
 
         // Tạo thư mục chứa các file nếu chưa được tạo
         File parent = new File(FileConstant.FILE_DIR);
@@ -140,30 +138,30 @@ public class FileUtil {
     /**
      * Xóa file AutoSync
      */
-    public static void deleteAutoSyncFile() {
-
-        File f = makeAutoSyncFile();
-        if (f != null) {
-            f.delete();
-        }
-
-    }
+//    public static void deleteaAutoSyncFile() {
+//
+//        File f = makeAutoSyncFile();
+//        if (f != null) {
+//            f.delete();
+//        }
+//
+//    }
 
     /**
      * Kiểm tra xem đang có ở trạng thái tự động đồng bộ không
      *
      * @return
      */
-    public static boolean isAutoSyncFile() {
-
-        // Tạo thư mục chứa các file nếu chưa được tạo
-        File parent = new File(FileConstant.FILE_DIR);
-        parent.mkdir();
-
-        File f = new File(parent, FileConstant.AUTOSYNC_FILE_NAME);
-        return f.exists();
-
-    }
+//    public static boolean isaAutoSyncFile() {
+//
+//        // Tạo thư mục chứa các file nếu chưa được tạo
+//        File parent = new File(FileConstant.FILE_DIR);
+//        parent.mkdir();
+//
+//        File f = new File(parent, FileConstant.AUTOSYNC_FILE_NAME);
+//        return f.exists();
+//
+//    }
 
     /**
      * Chuyển đổi file chung thành file của client
@@ -172,11 +170,9 @@ public class FileUtil {
      * @return
      */
     public static File convert2ClientFile(MyFile f) {
-
         String commonPath = f.getPath();
         File userDirectory = getUserDirectory();
         return new File(userDirectory, commonPath);
-
     }
 
     /**
@@ -185,10 +181,8 @@ public class FileUtil {
      * @return
      */
     public static MyFile convert2CommonFile(File f) {
-
         String commonPath = getCommonPath(f);
         return new MyFile(-1, commonPath, f.isDirectory(), f.lastModified(), -1, -1);
-
     }
 
     /**
@@ -208,10 +202,7 @@ public class FileUtil {
         if (start > clientPath.length()) {
             return "";
         }
-        String result;
-        result = clientPath.substring(start);
-        return result;
-
+        return clientPath.substring(start).replace("\\", "/");
     }
 
     /**
@@ -267,18 +258,15 @@ public class FileUtil {
 
     }
 
-    /**
-     * Xóa tất cả file lưu trạng thái của người dùng. Được goi khi đăng xuất
-     * khỏi hệ thống
-     * @throws java.io.IOException
-     */
-    public static void deleteAllConfigFile() throws IOException {
-
-        makeLoginFile().delete();
-        makeLoginFile().delete();
-        makeSnapshot().delete();
-
-    }
+//    /**
+//     * Xóa tất cả file lưu trạng thái của người dùng. Được goi khi đăng xuất
+//     * khỏi hệ thống
+//     * @throws java.io.IOException
+//     */
+//    public static void deleteAllConfigFile() throws IOException {
+//        makeLoginFile().delete();
+//        makeSnapshot().delete();
+//    }
 
     /**
      * Lấy ra kích thước thư mục hay tập tin
@@ -287,7 +275,6 @@ public class FileUtil {
      * @return
      */
     public static long getFileSize(File f) {
-
         if (f == null) {
             return 0;
         }

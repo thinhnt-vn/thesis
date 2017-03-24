@@ -11,7 +11,6 @@ import hust.soict.bkstorage.constants.FileConstant;
 import hust.soict.bkstorage.exception.DownloadExeption;
 import hust.soict.bkstorage.exception.LoginFailException;
 import hust.soict.bkstorage.utils.FileUtil;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -22,8 +21,8 @@ import javax.swing.JOptionPane;
  */
 public class LoginGui extends javax.swing.JFrame {
 
-    
     private DownloadProgressGui progressGui;
+
     /**
      * Creates new form LoginGui
      */
@@ -167,13 +166,7 @@ public class LoginGui extends javax.swing.JFrame {
         }
 
         // Đăng nhập thành công -> tài khoản và mật khẩu xuống file
-        try {
-            loginBll.save();
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Không lưu được tên tài khoản và "
-                    + "mật khẩu.", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+        loginBll.save();
 
         // Tạo thư mục của người dùng và tải dữ liệu nếu chưa tồn tại
         if (FileUtil.makeUserDirectory()) {
@@ -190,14 +183,14 @@ public class LoginGui extends javax.swing.JFrame {
             progressGui = new DownloadProgressGui(totalSize);
             progressThread = new Thread(progressGui);
             progressThread.start();
-            
+
             new Thread(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
                         new MainBll().downloadAll();
-                        if (progressGui.isActive()){
+                        if (progressGui.isActive()) {
                             progressGui.dispose();
                         }
                         new MainGui().setVisible(true);

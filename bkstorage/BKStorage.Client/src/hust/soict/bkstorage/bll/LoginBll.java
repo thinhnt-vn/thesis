@@ -10,6 +10,7 @@ import hust.soict.bkstorage.exception.LoginFailException;
 import hust.soict.bkstorage.remoteentity.Package;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 
 /**
  * Xử lý đăng nhập
@@ -58,9 +59,8 @@ public class LoginBll extends Bll{
     /**
      * Lưu tên người dùng và mật khẩu xuống file
      *
-     * @throws IOException
      */
-    public void save() throws IOException {
+    public void save()  {
         new LoginDal().write(userName, password);
     }
 }

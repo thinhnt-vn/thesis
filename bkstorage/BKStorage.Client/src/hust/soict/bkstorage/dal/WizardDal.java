@@ -5,17 +5,14 @@
  */
 package hust.soict.bkstorage.dal;
 
-import hust.soict.bkstorage.utils.FileUtil;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 /**
  * Đọc thông số từ file cấu hình
  *
  * @author toant_000
  */
-public class WizardDal {
+public class WizardDal extends Dal {
 
     public WizardDal() {
     }
@@ -24,19 +21,9 @@ public class WizardDal {
      * Lấy tên server
      *
      * @return
-     * @throws IOException
      */
-    public String readServerName() throws IOException  {
-        
-        RandomAccessFile io = new RandomAccessFile(FileUtil.makeConfigFile(), "r");
-        String text = io.readLine();
-        io.close();
-        if (text == null) {
-            return null;
-        }
-        return text.substring(text.indexOf("<servername>") + 12,
-                text.indexOf("</servername>"));
-        
+    public String readServerName() {
+        return configProperties.getProperty(SERVER_IP_KEY);
     }
 
     /**
@@ -46,53 +33,35 @@ public class WizardDal {
      * @throws IOException
      */
     public String readPort() throws IOException {
-        
-        RandomAccessFile io = new RandomAccessFile(FileUtil.makeConfigFile(), "r");
-        String text = io.readLine();
-        io.close();
-        if (text == null) {
-            return null;
-        }
-        return text.substring(text.indexOf("<port>") + 6,
-                text.indexOf("</port>"));
-        
+        return configProperties.getProperty(SERVER_PORT_KEY);
     }
 
     /**
      * Lấy tên người dùng đã lưu
      *
      * @return
-     * @throws FileNotFoundException
-     * @throws IOException
      */
-    public String readUserName() throws IOException {
-        
-        RandomAccessFile io = new RandomAccessFile(FileUtil.makeLoginFile(), "r");
-        String text = io.readLine();
-        io.close();
-        if (text == null) {
+    public String readUserName() {
+        String rs = options.getUserName();
+        if (rs == null || "null".equals(rs)) {
             return null;
         }
-        return text.substring(text.indexOf("<username>") + 10,
-                text.indexOf("</username>"));
-        
+
+        return rs;
     }
 
     /**
      * Lấy mật khẩu đã lưu
-     * @return 
+     *
+     * @return
      */
     public String readPassword() throws IOException {
-        
-        RandomAccessFile io = new RandomAccessFile(FileUtil.makeLoginFile(), "r");
-        String text = io.readLine();
-        io.close();
-        if (text == null) {
+        String rs = options.getPassword();
+        if (rs == null || "null".equals(rs)) {
             return null;
         }
-        return text.substring(text.indexOf("<password>") + 10,
-                text.indexOf("</password>"));
 
+        return rs;
     }
 
 }

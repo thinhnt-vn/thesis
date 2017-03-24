@@ -55,9 +55,6 @@ public class ConfigBll{
         // Kết nối tới Server
         ConfigDal configDal = new ConfigDal(serverName, portValue);
         configDal.connect();
-        
-       
-        
     }
 
     /**

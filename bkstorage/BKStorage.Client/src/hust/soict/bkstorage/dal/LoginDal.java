@@ -7,11 +7,7 @@ package hust.soict.bkstorage.dal;
 
 import hust.soict.bkstorage.remoteentity.Package;
 import hust.soict.bkstorage.remotecontroller.Login;
-import hust.soict.bkstorage.utils.FileUtil;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.rmi.RemoteException;
-import java.io.RandomAccessFile;
 
 /**
  *
@@ -37,14 +33,16 @@ public class LoginDal extends Dal {
 
     /**
      * Trả lại kích thước dữ liệu của người dùng lưu trên Server
-     * @param uid 
-     * @return  
+     *
+     * @param uid
+     * @return
+     * @throws java.rmi.RemoteException
      */
     public long getTotalSize(int uid) throws RemoteException {
 
         Login loginServerGui = factory.createLogin();
         return loginServerGui.getTotalSize(uid);
-        
+
     }
 
     /**
@@ -52,18 +50,10 @@ public class LoginDal extends Dal {
      *
      * @param userName
      * @param password
-     * @throws FileNotFoundException
-     * @throws IOException
      */
-    public void write(String userName, String password) throws FileNotFoundException, IOException {
-        RandomAccessFile io = new RandomAccessFile(FileUtil.makeLoginFile(), "rw");
-        io.writeBytes("<username>");
-        io.writeBytes(userName);
-        io.writeBytes("</username>");
-        io.writeBytes("<password>");
-        io.writeBytes(password);
-        io.writeBytes("</password>");
-        io.close();
+    public void write(String userName, String password){
+        options.setUserName(userName);
+        options.setPassword(password);
     }
-
+    
 }

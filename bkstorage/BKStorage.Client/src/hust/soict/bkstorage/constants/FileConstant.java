@@ -11,7 +11,7 @@ package hust.soict.bkstorage.constants;
  */
 public class FileConstant {
 
-    public final static String CONFIG_FILE_NAME = "config.mst";             // Tên của file cấu hình
+    public final static String CONFIG_FILE_NAME = "server.conf";             // Tên của file cấu hình
     public final static String LOGIN_FILE_NAME = "login.mst";               // Tên của file nhớ tên đăng nhập, mật khẩu
     public final static String SNAPSHOT_FILE_NAME = "snapshot.mst";         // Tên của file lưu trạng thái đăng nhập trước đó
     public final static String AUTOSYNC_FILE_NAME = "autosync.mst";         // Tên của file lưu trạng thái tự động đồng bộ

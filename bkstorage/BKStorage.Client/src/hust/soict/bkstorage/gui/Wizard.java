@@ -12,10 +12,15 @@ import hust.soict.bkstorage.bll.WizardBll;
 import hust.soict.bkstorage.exception.DownloadExeption;
 import hust.soict.bkstorage.exception.FileEmptyException;
 import hust.soict.bkstorage.exception.LoginFailException;
+import hust.soict.bkstorage.exception.OptionsMappingException;
+import hust.soict.bkstorage.exception.SnapshotMappingException;
 import hust.soict.bkstorage.exception.TextFieldEmptyException;
 import hust.soict.bkstorage.utils.FileUtil;
 import java.io.IOException;
 import java.rmi.NotBoundException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
@@ -33,10 +38,25 @@ public class Wizard {
         // Thử kết nối tới server
         WizardBll wizardBll = new WizardBll();
         try {
+            wizardBll.init();
+        } catch (ClassNotFoundException | OptionsMappingException |
+                IOException | SnapshotMappingException ex) {
+            Logger.getLogger(Wizard.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            if (40000 == ex.getErrorCode() && "XJ040".equals(ex.getSQLState())) {
+                JOptionPane.showMessageDialog(null, "Đã tồn tại kết nối đến Derby DB",
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                System.exit(1);
+            }
+            Logger.getLogger(Wizard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        try {
             String serverName = wizardBll.readServerName();
             String port = wizardBll.readPort();
             new ConfigBll(serverName, port).connect();
-        } catch (IOException | FileEmptyException | TextFieldEmptyException | NotBoundException ex) {
+        } catch (IOException | FileEmptyException |
+                TextFieldEmptyException | NotBoundException ex) {
             new ConfigGui().setVisible(true);
             return;
         }

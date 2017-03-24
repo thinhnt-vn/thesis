@@ -5,22 +5,21 @@
  */
 package hust.soict.bkstorage.dal;
 
-import hust.soict.bkstorage.constants.FileConstant;
+import hust.soict.bkstorage.entity.FileMetaData;
+import hust.soict.bkstorage.exception.OptionsMappingException;
+import hust.soict.bkstorage.exception.SnapshotMappingException;
 import hust.soict.bkstorage.remotecontroller.Main;
 import hust.soict.bkstorage.remoteentity.MyFile;
 import hust.soict.bkstorage.utils.FileUtil;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  *
@@ -56,10 +55,8 @@ public class MainDal extends Dal {
      * @throws java.rmi.RemoteException
      */
     public MyFile getFileByPath(String path, int uid) throws RemoteException {
-
         Main main = factory.createMain();
         return main.getFileByPath(path, uid);
-
     }
 
     /**
@@ -69,7 +66,6 @@ public class MainDal extends Dal {
      * @throws java.rmi.RemoteException
      */
     public void put(MyFile f) throws RemoteException {
-
         Main main = factory.createMain();
         main.put(f);
     }
@@ -80,11 +76,9 @@ public class MainDal extends Dal {
      * @param f
      * @throws java.rmi.RemoteException
      */
-    public void deleteServerFile(MyFile f) throws RemoteException  {
-
+    public void deleteServerFile(MyFile f) throws RemoteException {
         Main main = factory.createMain();
         main.delete(f);
-
     }
 
     /**
@@ -123,7 +117,6 @@ public class MainDal extends Dal {
      * @throws java.io.IOException
      */
     public void write(MyFile f) throws IOException {
-
         File clientFile = FileUtil.convert2ClientFile(f);
         BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(clientFile));
         byte[] data = f.getData();
@@ -133,7 +126,6 @@ public class MainDal extends Dal {
         }
         out.close();
         clientFile.setLastModified(f.getTimeModified());
-
     }
 
     /**
@@ -141,65 +133,63 @@ public class MainDal extends Dal {
      *
      * @param f
      * @return
-     * @throws java.io.FileNotFoundException
      */
-    public boolean isExistInSnapshot(MyFile f) throws FileNotFoundException, IOException {
-
-        String path = f.getPath();
-        BufferedReader in = new BufferedReader(new FileReader(FileUtil.makeSnapshot()));
-        String p;
-        while ((p = in.readLine()) != null) {
-            p = p.trim();
-            if (path.equals(p)) {
-                in.close();
+    public boolean isExistInSnapshot(MyFile f) {
+        String filePath = f.getPath();
+        for (Iterator<FileMetaData> iterator = snapshot.iterator(); iterator.hasNext();) {
+            FileMetaData next = iterator.next();
+            String nextPath = next.getFilePatch();
+            if (filePath.equals(nextPath)) {
                 return true;
             }
         }
-        in.close();
         return false;
-
     }
 
     /**
      * Thêm 1 file vào snapshot
      *
      * @param f
-     * @throws java.io.IOException
+     * @throws hust.soict.bkstorage.exception.SnapshotMappingException
      */
-    public void insertIntoSnapshot(MyFile f) throws IOException {
-
-        PrintWriter out = new PrintWriter(new FileWriter(FileUtil.makeSnapshot(), true));
-        out.println(f.getPath());
-        out.close();
-
+    public void insertIntoSnapshot(MyFile f) throws SnapshotMappingException {
+        snapshot.insert(new FileMetaData(f.getPath()));
     }
 
     /**
      * Xóa một file (cả các file con) lưu trong snapshot
      *
      * @param f
-     * @throws java.io.IOException
+     * @throws hust.soict.bkstorage.exception.SnapshotMappingException
      */
-    public void deleteFromSnapshot(MyFile f) throws IOException {
-
-        String path = f.getPath();
-        File snapshotFile = FileUtil.makeSnapshot();
-        File tempFile = File.createTempFile("stmp",
-                ".tmp", new File(FileConstant.FILE_DIR));
-        BufferedReader in = new BufferedReader(new FileReader(snapshotFile));
-        PrintWriter out = new PrintWriter(new FileWriter(tempFile));
-        String str;
-        while ((str = in.readLine()) != null) {
-            str = str.trim();
-            if (str.startsWith(path)) {
-                continue;
-            }
-            out.println(str);
-        }
-        in.close();
-        out.close();
-        snapshotFile.delete();
-        tempFile.renameTo(snapshotFile);
-
+    public void deleteFromSnapshot(MyFile f) throws SnapshotMappingException {
+        snapshot.delete(f.getPath());
+    }
+    
+    /**
+     * Xóa các tùy chọn của người dùng
+     * @throws hust.soict.bkstorage.exception.OptionsMappingException
+     */
+    public void clearUserOptions() throws OptionsMappingException{
+        options.setAutoSync(false);
+        options.setUserName("");
+        options.setPassword("");
+        options.flush();
+    }
+    
+    /**
+     * Xóa dữ liệu trong snapshot
+     * @throws SnapshotMappingException 
+     */
+    public void clearSnapshot() throws SnapshotMappingException{
+        snapshot.deleteAll();
+    }
+    
+    public void setAutoSync(boolean autoSync){
+        options.setAutoSync(autoSync);
+    }
+    
+    public boolean isAutoSync(){
+        return options.isAutoSync();
     }
 }

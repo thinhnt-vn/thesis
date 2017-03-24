@@ -9,6 +9,8 @@ import hust.soict.bkstorage.bll.MainBll;
 import hust.soict.bkstorage.constants.FileConstant;
 import hust.soict.bkstorage.entity.AutoSyncThread;
 import hust.soict.bkstorage.entity.FileBrowser;
+import hust.soict.bkstorage.exception.OptionsMappingException;
+import hust.soict.bkstorage.exception.SnapshotMappingException;
 import hust.soict.bkstorage.utils.FileUtil;
 import java.awt.AWTException;
 import java.awt.CheckboxMenuItem;
@@ -28,6 +30,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
@@ -54,7 +58,7 @@ public class MainGui extends javax.swing.JFrame {
         setContentPane(fileBrowser);
         fileBrowser.showRootFile();
 
-        autoSync = FileUtil.isAutoSyncFile();
+        autoSync = new MainBll().isAutoSync();
         addWindowStateListener(new WindowStateListener() {
 
             @Override
@@ -93,7 +97,7 @@ public class MainGui extends javax.swing.JFrame {
 
         MenuItem openFileBrowserItem = new MenuItem("Open File Browser");
         CheckboxMenuItem autoSyncItem = new CheckboxMenuItem("Auto Sync");
-        autoSyncItem.setState(FileUtil.isAutoSyncFile());
+        autoSyncItem.setState(new MainBll().isAutoSync());
         MenuItem syncItem = new MenuItem("Sync");
         syncItem.setEnabled(!autoSync);
         MenuItem logoutItem = new MenuItem("Logout");
@@ -120,7 +124,9 @@ public class MainGui extends javax.swing.JFrame {
                     dispose();
                     removeTrayIcon();
                     new ConfigGui().setVisible(true);
-                }catch (IOException | ClassNotFoundException io){
+                } catch (IOException | ClassNotFoundException io) {
+                } catch (SnapshotMappingException ex) {
+                    Logger.getLogger(MainGui.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
@@ -138,8 +144,8 @@ public class MainGui extends javax.swing.JFrame {
                 }
 
                 try {
-                    FileUtil.deleteAllConfigFile();
-                } catch (IOException ex) {
+                    new MainBll().logout();
+                } catch (SnapshotMappingException | OptionsMappingException ex) {
                     JOptionPane.showMessageDialog(null, "Không xóa được các "
                             + "file cấu hình", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
@@ -155,6 +161,11 @@ public class MainGui extends javax.swing.JFrame {
 //                Thoát khỏi chương trình
             @Override
             public void actionPerformed(ActionEvent e) {
+                try {
+                    new MainBll().shutoff();
+                } catch (OptionsMappingException | IOException ex) {
+                    Logger.getLogger(MainGui.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 System.exit(1);
             }
         });
@@ -207,12 +218,13 @@ public class MainGui extends javax.swing.JFrame {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
+            MainBll mainBll = new MainBll();
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 autoSync = true;
                 // Bật chế độ tự động đồng bộ
                 syncThread = new AutoSyncThread(getOuterClass());
                 syncThread.start();
-                FileUtil.makeAutoSyncFile();
+                mainBll.enableAutoSync();
                 syncItem.setEnabled(false);
             } else {
                 autoSync = false;
@@ -223,7 +235,7 @@ public class MainGui extends javax.swing.JFrame {
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "Lỗi",
                             JOptionPane.ERROR_MESSAGE);
                 }
-                FileUtil.deleteAutoSyncFile();
+                mainBll.disableAutoSync();
                 syncItem.setEnabled(true);
             }
         }
