@@ -104,7 +104,7 @@ public class CommandLineBll {
         }
         
         FactoryGui factoryGui = new FactoryGui();
-        System.setProperty( "java.rmi.server.hostname", Options.MY_IP_VALUE) ;
+        System.setProperty("java.rmi.server.hostname", Options.BIND_IP_VALUE) ;
         factoryGui.exportEntity(portValue);
         Registry registry = LocateRegistry.createRegistry(portValue);
         Remote stub = UnicastRemoteObject.exportObject(factoryGui, portValue);
