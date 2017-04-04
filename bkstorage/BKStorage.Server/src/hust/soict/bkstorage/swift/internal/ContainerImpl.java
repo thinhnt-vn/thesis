@@ -7,6 +7,7 @@ package hust.soict.bkstorage.swift.internal;
 
 import hust.soict.bkstorage.swift.Container;
 import hust.soict.bkstorage.swift.StorageObject;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,14 +19,17 @@ public class ContainerImpl implements Container {
 
     private StorageAPI api;
     private String containerName;
+    private Map<String, String> metadata;
 
     public ContainerImpl(StorageAPI api) {
         this.api = api;
     }
 
-    public ContainerImpl(StorageAPI api, String containerName) {
+    public ContainerImpl(StorageAPI api, String containerName,
+            Map<String, String> metadata) {
         this(api);
         this.containerName = containerName;
+        this.metadata = metadata;
     }
 
     @Override
@@ -54,6 +58,12 @@ public class ContainerImpl implements Container {
         } catch (StorageException ex) {
             Logger.getLogger(ContainerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    @Override
+    public long getBytesUsed() {
+        String bytesStr = metadata.get(SwiftConstants.HEADER_CONTAINER_BYTES_USED);
+        return Long.parseLong(bytesStr);
     }
 
 }

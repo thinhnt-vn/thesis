@@ -8,9 +8,11 @@ package hust.soict.bkstorage.swift.internal;
 import hust.soict.bkstorage.swift.Container;
 import hust.soict.bkstorage.swift.StorageObject;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -81,10 +83,15 @@ public class SwiftApi implements StorageAPI {
                 if (statusCode == 401) {
                     auth.retry();
                     return getContainer(containerName);
-                } else if (statusCode != 200) {
+                } else if (statusCode != 204 && statusCode != 200) {
                     return null;
                 }
-                return new ContainerImpl(this, containerName);
+                Map<String, String> metadata = new HashMap<>();
+                Header[] headers = response.getAllHeaders();
+                for (Header header : headers) {
+                    metadata.put(header.getName(), header.getValue());
+                }
+                return new ContainerImpl(this, containerName, metadata);
             } finally {
                 try {
                     response.close();
@@ -207,7 +214,9 @@ public class SwiftApi implements StorageAPI {
         try {
             httpPut.setHeader(SwiftConstants.HEADER_X_AUTH_TOKEN,
                     auth.getToken());
-            httpPut.setEntity(new ByteArrayEntity(content));
+            if (content != null) {
+                httpPut.setEntity(new ByteArrayEntity(content));
+            }
             CloseableHttpResponse response = httpClient.execute(httpPut);
             try {
                 int statusCode = response.getStatusLine().getStatusCode();

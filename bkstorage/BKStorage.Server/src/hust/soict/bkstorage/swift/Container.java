@@ -29,4 +29,10 @@ public interface Container {
      * @param object 
      */
     public void deleteObject(String object);
+    
+    /**
+     * 
+     * @return Dung lượng (bytes) đã sử dụng
+     */
+    public long getBytesUsed();
 }
