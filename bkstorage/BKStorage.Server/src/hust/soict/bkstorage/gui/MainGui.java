@@ -102,12 +102,10 @@ public class MainGui implements Main {
      * @param f
      */
     public void delete(MyFile f) {
-
         try {
             MainBll mainBll = new MainBll();
             mainBll.delete(f);
         } catch (SQLException | IOException ex) {
         }
-
     }
 }

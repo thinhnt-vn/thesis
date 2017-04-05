@@ -10,7 +10,6 @@ import hust.soict.bkstorage.exceptions.IncorrectPasswordException;
 import hust.soict.bkstorage.exceptions.NonExistentUserExcepiton;
 import hust.soict.bkstorage.remotecontroller.Login;
 import hust.soict.bkstorage.remoteentity.Package;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
@@ -41,15 +40,8 @@ public class LoginGui implements Login {
 
     @Override
     public long getTotalSize(int uid) throws RemoteException {
-        
-        try {
-            LoginBll loginBll = new LoginBll();
-            return loginBll.getTotalSize(uid);
-        } catch (IOException ex) {
-            return 0;
-        }
-        
+        LoginBll loginBll = new LoginBll();
+        return loginBll.getTotalSize(uid);
     }
-    
 
 }

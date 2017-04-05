@@ -32,7 +32,6 @@ public class MainBll {
      * @throws java.sql.SQLException
      */
     public ArrayList<MyFile> getAllFileByParent(int uid, int pid) throws SQLException {
-
         MainDal mainDal = new MainDal();
         ResultSet rs = mainDal.getFileList(uid, pid);
         ArrayList<MyFile> list = new ArrayList<MyFile>();
@@ -43,12 +42,10 @@ public class MainBll {
             int directory = rs.getInt("directory");
             boolean dir = directory == 1;
             long timeModified = rs.getLong("timemodified");
-
             list.add(new MyFile(fid, path, dir, timeModified, pid, uid));
         }
 
         return list;
-
     }
 
     /**
@@ -60,7 +57,6 @@ public class MainBll {
      * @throws java.sql.SQLException
      */
     public MyFile getFileByPath(String path, int uid) throws SQLException {
-
         MainDal mainDal = new MainDal();
         ResultSet rs = mainDal.getFileList(path, uid);
         MyFile myFile = null;
@@ -72,7 +68,6 @@ public class MainBll {
             int parentID = rs.getInt("parentid");
             myFile = new MyFile(fid, path, dir, timeModified, parentID, uid);
         }
-
         return myFile;
     }
 
@@ -83,11 +78,11 @@ public class MainBll {
      * @throws IOException
      */
     public void makeData(MyFile f) throws IOException {
-
-        File serverFile = FileUtil.convert2ServerFile(f);
-        byte[] data = new MainDal().readDataFromFile(serverFile);
+        String container = "" + f.getUserID();
+        String objName = f.getPath();
+        byte[] data = new MainDal().readObjectData(container,
+                objName);
         f.setData(data);
-
     }
 
     /**
@@ -100,20 +95,19 @@ public class MainBll {
     public void storageFile(MyFile f) throws IOException, SQLException {
         MainDal mainDal = new MainDal();
         byte[] data = f.getData();
-        File serverFile = FileUtil.convert2ServerFile(f);
+        String container = "" + f.getUserID();
+        String objName = f.getPath();
         if (!f.isDerectory()) {
-            mainDal.writeDataIntoFile(data, serverFile);
+            mainDal.writeDataIntoObject(container, objName, data);
         } else {
-            serverFile.mkdir();
+            mainDal.createFolderObject(container, objName);
         }
 
-        serverFile.setLastModified(f.getTimeModified());
-
-        if (!mainDal.isExistInDB(f.getPath(), f.getUserID())) {
-            mainDal.insertFileRecord(f.getPath(), f.isDerectory(), f.getTimeModified(),
+        if (!mainDal.isExistInDB(objName, f.getUserID())) {
+            mainDal.insertFileRecord(objName, f.isDerectory(), f.getTimeModified(),
                     f.getParentID(), f.getUserID());
         } else {
-            mainDal.updateFileRecord(f.getPath(), f.getTimeModified(), f.getUserID());
+            mainDal.updateFileRecord(objName, f.getTimeModified(), f.getUserID());
         }
     }
 
@@ -125,14 +119,12 @@ public class MainBll {
      * @throws java.io.IOException
      */
     public void delete(MyFile f) throws SQLException, IOException {
-
         MainDal mainDal = new MainDal();
         // Xóa bản ghi trong DB
         int id = f.getId();
-        mainDal.deleteFileRecord(id);
+        mainDal.deleteFile(id);
         // Xóa file trên đĩa cứng của server
-        mainDal.delete(f);
-
+//        mainDal.delete(f);
     }
 
 }

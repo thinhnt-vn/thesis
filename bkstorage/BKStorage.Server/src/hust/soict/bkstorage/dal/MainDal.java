@@ -5,16 +5,12 @@
  */
 package hust.soict.bkstorage.dal;
 
-import hust.soict.bkstorage.remoteentity.MyFile;
-import static hust.soict.bkstorage.utils.FileUtil.convert2ServerFile;
-import java.io.BufferedOutputStream;
-import java.io.File;
+import hust.soict.bkstorage.swift.Account;
+import hust.soict.bkstorage.swift.Container;
+import hust.soict.bkstorage.swift.ObjectBuilder;
+import hust.soict.bkstorage.swift.StorageObject;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,11 +48,10 @@ public class MainDal extends Dal {
      * @throws java.sql.SQLException
      */
     public ResultSet getFileList(String path, int uid) throws SQLException {
-        path = path.replace("\\", "\\\\");
-        String query = "SELECT * FROM file WHERE path ='" + path + "' AND userid = " + uid;
+        String query = "SELECT * FROM file WHERE path ='" + path
+                + "' AND userid = " + uid;
         Statement statement = connection.createStatement();
         return statement.executeQuery(query);
-
     }
 
     /**
@@ -68,13 +63,11 @@ public class MainDal extends Dal {
      * @throws SQLException
      */
     public boolean isExistInDB(String path, int uid) throws SQLException {
-
-        path = path.replace("\\", "\\\\");
-        String query = "SELECT 1 FROM file WHERE userid = " + uid + " AND path = '" + path + "'";
+        String query = "SELECT 1 FROM file WHERE userid = " + uid
+                + " AND path = '" + path + "'";
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(query);
         return rs.first();
-
     }
 
     /**
@@ -89,15 +82,12 @@ public class MainDal extends Dal {
      */
     public void insertFileRecord(String path, boolean isDirectory, long timeModified,
             int pid, int uid) throws SQLException {
-
-        path = path.replace("\\", "\\\\");
         int dir = isDirectory ? 1 : 0;
         String query = "INSERT INTO file (path, directory, timemodified, parentid,"
                 + " userid) VALUES ('" + path + "'," + dir + "," + timeModified
                 + "," + pid + "," + uid + ")";
         Statement statement = connection.createStatement();
         statement.executeUpdate(query);
-
     }
 
     /**
@@ -110,163 +100,81 @@ public class MainDal extends Dal {
      */
     public void updateFileRecord(String path, long timeModified, int uid)
             throws SQLException {
-
-        path = path.replace("\\", "\\\\");
         String query = "UPDATE file SET timemodified = " + timeModified + " WHERE "
                 + "userid = " + uid + " AND path = '" + path + "'";
         Statement statement = connection.createStatement();
         statement.executeUpdate(query);
-
     }
 
     /**
-     * Xóa bản ghi của file (gồm cả bản ghi của các file con) trong db
+     * Xóa đối tượng và các bản ghi tương ứng trong DB
      *
      * @param id
      * @throws java.sql.SQLException
      */
-    public void deleteFileRecord(int id) throws SQLException {
-
+    public void deleteFile(int id) throws SQLException {
         // Lấy ra các bản ghi con
         String query = "SELECT id FROM file WHERE parentid = " + id;
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(query);
         while (rs.next()) {
             int childID = rs.getInt(1);
-            deleteFileRecord(childID);
+            deleteFile(childID);
         }
+        query = "SELECT userid, path, directory FROM file WHERE id = " + id;
+        rs = statement.executeQuery(query);
+        while (rs.next()) {
+            String container = rs.getString(1);
+            String path = rs.getString(2);
+            int dir = rs.getInt(3);
+            if (dir == 1) {
+                path += "/";
+            }
+            getAccount().getContainer(container).deleteObject(path);
+        }
+
         query = "DELETE FROM file WHERE id = " + id;
         statement.executeUpdate(query);
-
     }
 
     /**
      * Trả lại mảng dữ liệu của file f
      *
-     * @param f
+     * @param container
+     * @param objName
      * @return
      * @throws java.io.FileNotFoundException
      */
-    public byte[] readDataFromFile(File f) throws FileNotFoundException, IOException {
-
-        boolean finish = false;
-        byte[] data = null;
-        while (!finish) {
-            RandomAccessFile io = new RandomAccessFile(f, "rw");
-            FileChannel channel = io.getChannel();
-            FileLock look = channel.tryLock();
-            if (look != null) {
-                // Nếu file đang tự do (không bị tiến trình khác chiếm)
-                try {
-                    data = new byte[(int) io.length()];
-                    io.readFully(data);
-                    finish = true;
-                } finally {
-                    look.release();
-                    io.close();
-                }
-            } else {
-                // File đã bị tiến trình khác khóa
-                io.close();
-                if (!f.exists()) {
-                    finish = true;
-                }
-            }
-        }
-        return data;
-
+    public byte[] readObjectData(String container, String objName) throws
+            FileNotFoundException, IOException {
+        StorageObject object = getAccount().getContainer(container)
+                .getObject(objName);
+        return object.getContent();
     }
 
     /**
      * Ghi dữ liệu của 1 file xuống ổ đĩa
      *
+     * @param container
+     * @param objName
      * @param data
-     * @param f
-     * @throws FileNotFoundException
-     * @throws IOException
      */
-    public void writeDataIntoFile(byte[] data, File f) throws FileNotFoundException, IOException {
-
-        FileOutputStream outputStream = new FileOutputStream(f);
-        BufferedOutputStream out = new BufferedOutputStream(outputStream);
-        boolean finish = false;
-        while (!finish) {
-            FileChannel channel = outputStream.getChannel();
-            FileLock look = channel.tryLock();
-            if (look != null) {
-                // Nếu file đang tự do (không bị tiến trình khác chiếm)
-                try {
-                    out.write(data);
-                    out.flush();
-                    finish = true;
-                } finally {
-                    look.release();
-                    out.close();
-                }
-            } else {
-                // File đã bị tiến trình khác khóa
-                out.close();
-                if (!f.exists()) {
-                    finish = true;
-                }
-            }
-        }
-
+    public void writeDataIntoObject(String container, String objName,
+            byte[] data) {
+        StorageObject obj = ObjectBuilder.newBuilder()
+                .name(objName)
+                .content(data)
+                .build();
+        Account acc = getAccount();
+        Container con = acc.getContainer(container);
+        con.putObject(obj);
     }
 
-    /**
-     * Xóa file hoặc thư mục (gồm tất cả các tập tin con)
-     *
-     * @param f
-     * @return
-     */
-    private boolean delete(File f) throws FileNotFoundException, IOException {
-
-        if (f.isDirectory()) {
-            String[] names = f.list();
-            for (String name : names) {
-                delete(new File(f, name));
-            }
-        }
-        boolean result = false;
-        while (f.exists()) {       
-            f.delete();
-        }
-//        FileOutputStream out = new FileOutputStream(f);
-//        boolean finish = false;
-//        while (!finish) {
-//            FileChannel channel = out.getChannel();
-//            FileLock look = channel.tryLock();
-//            if (look != null) {
-//                // Nếu file đang tự do (không bị tiến trình khác chiếm)
-//                try {
-//                    out.close();
-//                    result = f.delete();
-//                    finish = true;
-//                } finally {
-//
-//                }
-//            } else {
-//                // File đã bị tiến trình khác khóa
-//                out.close();
-//                if (!f.exists()) {
-//                    finish = true;
-//                }
-//            }
-//        }
-
-        return result;
-    }
-
-    /**
-     * Xóa file hoặc thư mục - file ở dạng chung
-     *
-     * @param f
-     * @return
-     * @throws java.io.IOException
-     */
-    public boolean delete(MyFile f) throws IOException {
-        return delete(convert2ServerFile(f));
+    public void createFolderObject(String container, String objName) {
+        StorageObject obj = ObjectBuilder.newBuilder()
+                .name(objName + "/")
+                .build();
+        getAccount().getContainer(container).putObject(obj);
     }
 
 }

@@ -34,6 +34,18 @@ public class Options {
     private final static String MYSQL_PASSWORD_KEY = "mysql_pasword";
     public static String MYSQL_DB_NAME_VALUE;
     private final static String MYSQL_DB_NAME_KEY = "mysql_db_name";
+
+    public static String SWIFT_DOMAIN_NAME_VALUE;
+    private static String SWIFT_DOMAIN_NAME_KEY = "swift_domain_name";
+    public static String SWIFT_PROJECT_NAME_VALUE;
+    private static String SWIFT_PROJECT_NAME_KEY = "swift_project_name";
+    public static String SWIFT_USERNAME_VALUE;
+    private static String SWIFT_USERNAME_KEY = "swift_user_name";
+    public static String SWIFT_PASSWORD_VALUE;
+    private static String SWIFT_PASSWORD_KEY = "swift_password";
+    public static String SWIFT_AUTH_URL_VALUE;
+    private static String SWIFT_AUTH_URL_KEY = "swift_auth_url";
+
     public static String CONFIG_FILE = "bkstorage.conf";
     private static Properties appProperties;
 
@@ -50,6 +62,11 @@ public class Options {
         MYSQL_USER_NAME_VALUE = appProperties.getProperty(MYSQL_USER_NAME_KEY);
         MYSQL_PASSWORD_VALUE = appProperties.getProperty(MYSQL_PASSWORD_KEY);
         MYSQL_DB_NAME_VALUE = appProperties.getProperty(MYSQL_DB_NAME_KEY);
+        SWIFT_DOMAIN_NAME_VALUE = appProperties.getProperty(SWIFT_DOMAIN_NAME_KEY);
+        SWIFT_PROJECT_NAME_VALUE = appProperties.getProperty(SWIFT_PROJECT_NAME_KEY);
+        SWIFT_USERNAME_VALUE = appProperties.getProperty(SWIFT_USERNAME_KEY);
+        SWIFT_PASSWORD_VALUE = appProperties.getProperty(SWIFT_PASSWORD_KEY);
+        SWIFT_AUTH_URL_VALUE = appProperties.getProperty(SWIFT_AUTH_URL_KEY);
     }
 
     public static void store(String configFile) throws FileNotFoundException,
@@ -65,7 +82,7 @@ public class Options {
             appProperties.store(out, null);
         }
     }
-    
+
     public static void main(String[] args) {
         try {
             Options.load(Options.CONFIG_FILE);
@@ -75,6 +92,10 @@ public class Options {
             System.out.println(Options.MYSQL_USER_NAME_VALUE);
             System.out.println(Options.MYSQL_PASSWORD_VALUE);
             System.out.println(Options.MYSQL_DB_NAME_VALUE);
+            System.out.println(Options.SWIFT_PROJECT_NAME_VALUE);
+            System.out.println(Options.SWIFT_USERNAME_VALUE);
+            System.out.println(Options.SWIFT_PASSWORD_VALUE);
+            System.out.println(Options.SWIFT_AUTH_URL_VALUE);
         } catch (IOException ex) {
             Logger.getLogger(Options.class.getName()).log(Level.SEVERE, null, ex);
         }

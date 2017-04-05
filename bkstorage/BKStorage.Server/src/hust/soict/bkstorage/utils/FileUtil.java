@@ -25,7 +25,7 @@ public class FileUtil {
      * @return
      * @throws java.io.IOException
      */
-    public static File makeUserDirectory(int uid) throws IOException {
+    public static File makeaUserDirectory(int uid) throws IOException {
         // Tạo thư mục chứa các file nếu chưa được tạo
         File parent = new File(FileConstant.DATA_DIR);
         parent.mkdir();
@@ -44,14 +44,12 @@ public class FileUtil {
      * @throws java.io.IOException
      */
     public static File getUserDirectory(int userID) throws IOException {
-
         // Tạo thư mục chứa các file nếu chưa được tạo
         File parent = new File(FileConstant.DATA_DIR);
 
         // Tạo và trả lại file cấu hình trong thư mục
         File result = new File(parent, String.valueOf(userID));
         return result;
-
     }
 
     /**
@@ -81,7 +79,6 @@ public class FileUtil {
         String result;
         result = serverPath.substring(start);
         return result;
-
     }
 
     /**
@@ -92,10 +89,8 @@ public class FileUtil {
      * @throws java.io.IOException
      */
     public static File convert2ServerFile(MyFile file) throws IOException {
-
         File userDirectory = getUserDirectory(file.getUserID());
         return new File(userDirectory, file.getPath());
-
     }
 
     /**
@@ -131,7 +126,6 @@ public class FileUtil {
      * @return
      */
     public static long getFileSize(File f) {
-
         if (f == null) {
             return 0;
         }

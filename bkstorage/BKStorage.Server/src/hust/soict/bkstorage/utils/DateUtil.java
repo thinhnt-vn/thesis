@@ -13,10 +13,10 @@ import java.util.Date;
  * @author thinhnt
  */
 public class DateUtil {
-    
-    public static String convert2String(long lastModified){
+
+    public static String convert2String(long lastModified) {
         SimpleDateFormat formater = new SimpleDateFormat("dd-MMM-yy  hh:mm aa");
         return formater.format(new Date(lastModified));
     }
-            
+
 }

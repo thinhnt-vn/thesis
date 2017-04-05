@@ -5,7 +5,6 @@
  */
 package hust.soict.bkstorage.bll;
 
-
 import hust.soict.bkstorage.constants.Options;
 import hust.soict.bkstorage.dal.CommandLineDal;
 import hust.soict.bkstorage.dal.Dal;
@@ -13,7 +12,6 @@ import hust.soict.bkstorage.exceptions.CreateUserException;
 import hust.soict.bkstorage.exceptions.ErrorCommandException;
 import hust.soict.bkstorage.exceptions.StartupExeption;
 import hust.soict.bkstorage.gui.FactoryGui;
-import hust.soict.bkstorage.utils.FileUtil;
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -75,7 +73,6 @@ public class CommandLineBll {
         }
         int portValue = Integer.parseInt(port);
         new Dal().connect2SQLServer(serverName, portValue, userName, password, dBName);
-
     }
 
     /**
@@ -102,9 +99,9 @@ public class CommandLineBll {
         } catch (NumberFormatException ex) {
             throw new NumberFormatException("Lỗi! Cổng phải là số.");
         }
-        
+
         FactoryGui factoryGui = new FactoryGui();
-        System.setProperty("java.rmi.server.hostname", Options.BIND_IP_VALUE) ;
+        System.setProperty("java.rmi.server.hostname", Options.BIND_IP_VALUE);
         factoryGui.exportEntity(portValue);
         Registry registry = LocateRegistry.createRegistry(portValue);
         Remote stub = UnicastRemoteObject.exportObject(factoryGui, portValue);
@@ -121,16 +118,16 @@ public class CommandLineBll {
      * @throws ErrorCommandException
      * @throws java.sql.SQLException
      * @throws java.io.IOException
-     * @throws hust.soict.k57.it3650.exception.CreateUserException
+     * @throws hust.soict.bkstorage.exceptions.CreateUserException
      */
     public void createUser(String name, String userName, String password, String capacity)
             throws ErrorCommandException, SQLException, IOException, CreateUserException {
-        
+
         if (Dal.getConnection() == null) {
             throw new CreateUserException("Lỗi! Không thể thêm người dùng khi chưa kết "
                     + "nối tới SQL Server");
         }
-        
+
         if (name == null) {
             throw new ErrorCommandException("Lỗi! Bạn chưa nhập tên của người dùng mới.");
         }
@@ -186,16 +183,10 @@ public class CommandLineBll {
         // Thêm
         commandLineDal.insertUser(name, userName, password, capacityInt);
 
-        //Tạo thư mục cho người dùng
+        //Tạo container cho người dùng
         int userID = commandLineDal.getID(userName);
-        
-        try {
-            FileUtil.makeUserDirectory(userID);
-        } catch (IOException io) {
-            commandLineDal.removeUser(userID);
-            throw new IOException("Lỗi! Không thể tạo thư mục cho người dùng.");
-        }
 
+        commandLineDal.createContainerForUser(userID);
     }
 
 }

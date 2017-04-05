@@ -8,7 +8,6 @@ package hust.soict.bkstorage.bll;
 import hust.soict.bkstorage.dal.LoginDal;
 import hust.soict.bkstorage.exceptions.IncorrectPasswordException;
 import hust.soict.bkstorage.exceptions.NonExistentUserExcepiton;
-import hust.soict.bkstorage.utils.FileUtil;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -48,16 +47,13 @@ public class LoginBll {
         if (!truthPassword.equals(password)) {
             throw new IncorrectPasswordException("Mật khẩu không đúng!");
         }
-
+        
         return loginDal.getID(userName);
         
     }
     
-    public long getTotalSize(int uid) throws IOException{
-        
-        long result = FileUtil.getFileSize(FileUtil.getUserDirectory(uid));
-        return result;
-        
+    public long getTotalSize(int uid){
+        return new LoginDal().getUserByteUsed(uid);
     }
 
 }

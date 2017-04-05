@@ -27,7 +27,6 @@ public class FileBrowserDal extends Dal {
      * @throws java.sql.SQLException
      */
     public ResultSet getUserName(int id) throws SQLException {
-
         String query = "SELECT username FROM user WHERE id = " + id;
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(query);

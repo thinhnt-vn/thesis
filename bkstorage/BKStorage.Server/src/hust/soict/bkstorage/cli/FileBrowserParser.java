@@ -137,7 +137,6 @@ public class FileBrowserParser extends CommandParser {
     }
 
     protected void parseHelp() throws IOException, ErrorCommandException {
-        
         int spaceIndex = command.indexOf(' ');
         if (spaceIndex < 0) {
             showFileContent(new File(FileConstant.HELP_DIR, FileConstant.BROWSERHELP_HELP_FILE));
@@ -158,7 +157,6 @@ public class FileBrowserParser extends CommandParser {
             default:
                 throw new ErrorCommandException("Lỗi! Không tìm thấy lệnh " + cmd);
         }
-
     }
     
 
@@ -169,7 +167,6 @@ public class FileBrowserParser extends CommandParser {
      * @param f
      */
     private void show(File f) {
-
         System.out.println("");
         showHeader();
         if (!f.isDirectory()) {
@@ -190,7 +187,6 @@ public class FileBrowserParser extends CommandParser {
                         childFile.lastModified(), i == childFiles.length - 1);
             }
         }
-
     }
 
     /**

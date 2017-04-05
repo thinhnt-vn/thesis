@@ -18,8 +18,6 @@ public class LoginDal extends Dal {
 
     public LoginDal() {
     }
-    
-    
 
     /**
      * Lấy mật khẩu ứng với tên người dùng
@@ -37,6 +35,9 @@ public class LoginDal extends Dal {
         }
         return rs.getString(1);
     }
-    
-    
+
+    public long getUserByteUsed(int uid) {
+        return getAccount().getContainer("" + uid).getBytesUsed();
+    }
+
 }

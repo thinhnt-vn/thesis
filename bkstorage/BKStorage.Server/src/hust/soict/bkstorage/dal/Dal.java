@@ -5,11 +5,17 @@
  */
 package hust.soict.bkstorage.dal;
 
+import hust.soict.bkstorage.constants.Options;
+import hust.soict.bkstorage.swift.Account;
+import hust.soict.bkstorage.swift.AccountBuilder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.http.auth.AuthenticationException;
 
 /**
  *
@@ -18,9 +24,10 @@ import java.sql.Statement;
 public class Dal {
 
     protected static Connection connection;
+    private static Account ossAccount;
 
     public Dal() {
-
+        getAccount();
     }
 
     /**
@@ -60,7 +67,7 @@ public class Dal {
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(query);
         int result = -1;
-        while (rs.next()) {            
+        while (rs.next()) {
             result = rs.getInt(1);
         }
         return result;
@@ -69,6 +76,22 @@ public class Dal {
 
     public static Connection getConnection() {
         return connection;
+    }
+
+    protected static Account getAccount() {
+        if (ossAccount == null) {
+            try {
+                ossAccount = AccountBuilder.newBuilder()
+                        .authUrl(Options.SWIFT_AUTH_URL_VALUE)
+                        .domain(Options.SWIFT_DOMAIN_NAME_VALUE)
+                        .project(Options.SWIFT_PROJECT_NAME_VALUE)
+                        .creticate(Options.SWIFT_USERNAME_VALUE,
+                                Options.SWIFT_PASSWORD_VALUE).build();
+            } catch (AuthenticationException ex) {
+                Logger.getLogger(Dal.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return ossAccount;
     }
 
 }
