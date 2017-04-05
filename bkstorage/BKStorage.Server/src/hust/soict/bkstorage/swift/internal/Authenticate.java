@@ -12,7 +12,7 @@ import org.apache.http.auth.AuthenticationException;
  * @author thinhnt
  */
 public interface Authenticate {
-
+    
     public String getToken();
 
     public String getStorageURL();
