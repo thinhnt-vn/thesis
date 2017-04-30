@@ -31,8 +31,6 @@ public class MyFile implements Serializable {
         this.parentID = patentID;
         this.userID = userID;
     }
-    
-  
 
     public int getId() {
         return id;
