@@ -39,10 +39,8 @@ public class LoginDal extends Dal {
      * @throws java.rmi.RemoteException
      */
     public long getTotalSize(int uid) throws RemoteException {
-
         Login loginServerGui = factory.createLogin();
         return loginServerGui.getTotalSize(uid);
-
     }
 
     /**

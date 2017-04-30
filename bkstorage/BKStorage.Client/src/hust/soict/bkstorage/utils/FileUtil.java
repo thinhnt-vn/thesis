@@ -25,7 +25,6 @@ public class FileUtil {
      * @throws java.io.IOException
      */
     public static File makeConfigFile() throws IOException {
-
         // Tạo thư mục chứa các file nếu chưa được tạo
         File parent = new File(FileConstant.FILE_DIR);
         parent.mkdir();
@@ -213,7 +212,6 @@ public class FileUtil {
      * @return
      */
     public static MyFile getFileFromList(ArrayList<MyFile> list, String path) {
-
         if (list == null || path == null) {
             return null;
         }
@@ -225,7 +223,6 @@ public class FileUtil {
         }
 
         return null;
-
     }
 
     /**
@@ -253,9 +250,7 @@ public class FileUtil {
      * @return
      */
     public static boolean delete(MyFile f) {
-
         return delete(convert2ClientFile(f));
-
     }
 
 //    /**

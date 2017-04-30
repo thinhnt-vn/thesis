@@ -8,9 +8,7 @@ package hust.soict.bkstorage.bll;
 import hust.soict.bkstorage.dal.LoginDal;
 import hust.soict.bkstorage.exception.LoginFailException;
 import hust.soict.bkstorage.remoteentity.Package;
-import java.io.IOException;
 import java.rmi.RemoteException;
-import java.sql.SQLException;
 
 /**
  * Xử lý đăng nhập
@@ -50,10 +48,8 @@ public class LoginBll extends Bll{
      * @throws java.rmi.RemoteException 
      */
     public long getTotalSize() throws RemoteException{
-        
         long result = new LoginDal().getTotalSize(id);
         return result;
-        
     }
 
     /**

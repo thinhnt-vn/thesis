@@ -9,10 +9,10 @@ package hust.soict.bkstorage.exception;
  *
  * @author thinhnt
  */
-public class SnapshotMappingException extends Exception{
+public class SnapshotMappingException extends Exception {
 
     public SnapshotMappingException(String message) {
         super(message);
     }
-    
+
 }

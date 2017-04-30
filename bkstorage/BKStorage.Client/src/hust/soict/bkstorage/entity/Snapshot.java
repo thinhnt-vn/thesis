@@ -41,6 +41,17 @@ public class Snapshot extends HashSet<FileMetaData> {
         mapper.store(metaData);
     }
 
+    public void update(String path, boolean deleted) throws SnapshotMappingException {
+        for (Iterator<FileMetaData> iterator = this.iterator(); iterator.hasNext();) {
+            LanSyncFileMetaData next = (LanSyncFileMetaData) iterator.next();
+            if (next.getFilePatch().equals(path)) {
+                next.setDelete(deleted);
+                ((DerbyLanSyncSnapshotMapper) mapper).update(next);
+                return;
+            }
+        }
+    }
+
     public void delete(String path) throws SnapshotMappingException {
         for (Iterator<FileMetaData> iterator = this.iterator(); iterator.hasNext();) {
             FileMetaData next = iterator.next();

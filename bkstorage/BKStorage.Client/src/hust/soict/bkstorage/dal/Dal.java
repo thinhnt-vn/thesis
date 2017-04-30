@@ -41,8 +41,9 @@ public class Dal {
     protected static Properties configProperties;
     protected static final String SERVER_IP_KEY = "bkstorage_ip";
     protected static final String SERVER_PORT_KEY = "bkstorage_port";
+    private final static String snapshotTable = "files";
 
-    protected static Options options;
+    public static Options options;
 
     protected static Snapshot snapshot;
 

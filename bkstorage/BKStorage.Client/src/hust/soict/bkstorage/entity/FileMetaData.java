@@ -9,7 +9,8 @@ package hust.soict.bkstorage.entity;
  *
  * @author thinhnt
  */
-public class FileMetaData {
+public class FileMetaData{
+
     private String filePatch;
 
     public FileMetaData() {

@@ -89,10 +89,8 @@ public class MainDal extends Dal {
      * @throws java.rmi.RemoteException
      */
     public MyFile getData(MyFile file) throws RemoteException {
-
         Main main = factory.createMain();
         return main.getData(file);
-
     }
 
     /**

@@ -14,9 +14,10 @@ import java.util.HashMap;
  */
 public class Options extends HashMap<String, String> {
 
-    public static String AUTO_SYNC_KEY = "auto_sync";
-    public static String USER_NAME_KEY = "user_name";
-    public static String PASSWORD_KEY = "password";
+    public final static String AUTO_SYNC_KEY = "auto_sync";
+    public final static String USER_NAME_KEY = "user_name";
+    public final static String PASSWORD_KEY = "password";
+    public final static String LAN_PORT_KEY = "lan_port";
 
     private OptionsLoader optionsLoader;
     private OptionsFlusher optionsFlusher;
@@ -65,6 +66,10 @@ public class Options extends HashMap<String, String> {
 
     public void setPassword(String password) {
         put(PASSWORD_KEY, password);
+    }
+
+    public String getLanPort() {
+        return get(LAN_PORT_KEY);
     }
 
     public static interface OptionsLoader {

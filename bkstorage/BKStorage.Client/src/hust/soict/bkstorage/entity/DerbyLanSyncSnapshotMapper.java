@@ -10,29 +10,33 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author thinhnt
  */
-public class DerbySnapshotMapper implements Snapshot.SnapshotMapper {
+public class DerbyLanSyncSnapshotMapper implements Snapshot.SnapshotMapper {
 
     private Connection connection;
+    private final static String table = "lansyncfiles";
 
-    public DerbySnapshotMapper(Connection connection) {
+    public DerbyLanSyncSnapshotMapper(Connection connection) {
         this.connection = connection;
     }
 
     @Override
     public void loadAll(Snapshot snapshot) throws SnapshotMappingException {
         try {
-            String query = "SELECT * FROM files";
+            String query = "SELECT * FROM " + table;
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(query);
             while (rs.next()) {
-                FileMetaData fileMetaData = new FileMetaData();
                 String filePath = rs.getString(2);
-                fileMetaData.setFilePatch(filePath);
+                boolean deleted = rs.getBoolean(3);
+                LanSyncFileMetaData fileMetaData = new LanSyncFileMetaData(
+                        filePath, deleted);
                 snapshot.add(fileMetaData);
             }
         } catch (SQLException ex) {
@@ -42,8 +46,37 @@ public class DerbySnapshotMapper implements Snapshot.SnapshotMapper {
 
     @Override
     public void store(FileMetaData metaData) throws SnapshotMappingException {
+        LanSyncFileMetaData lanSyncFileMetaData = (LanSyncFileMetaData) metaData;
         try {
-            String query = "INSERT INTO files(path) VALUES ('" + metaData.getFilePatch() + "')";
+            String v1 = lanSyncFileMetaData.getFilePatch();
+            boolean v2 = lanSyncFileMetaData.isDeleted();
+            String query = "INSERT INTO " + table + "(path, deleted) VALUES ('"
+                    + v1 + "', "
+                    + v2 + ")";
+            System.out.println("Query: " + query);
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw new SnapshotMappingException(ex.getMessage());
+        }
+    }
+
+    public void update(LanSyncFileMetaData metaData) throws SnapshotMappingException {
+        try {
+            String query = "UPDATE " + table + " SET deleted = " + metaData.isDeleted()
+                    + " WHERE path = '" + metaData.getFilePatch() + "'";
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(query);
+        } catch (SQLException ex1) {
+            Logger.getLogger(DerbyLanSyncSnapshotMapper.class.getName()).log(Level.SEVERE, null, ex1);
+            throw new SnapshotMappingException(ex1.getMessage());
+        }
+    }
+
+    @Override
+    public void delete(FileMetaData metaData) throws SnapshotMappingException {
+        try {
+            String query = "DELETE FROM " + table + " WHERE path = '" + metaData.getFilePatch() + "'";
             Statement statement = connection.createStatement();
             statement.executeUpdate(query);
         } catch (SQLException ex) {
@@ -52,9 +85,9 @@ public class DerbySnapshotMapper implements Snapshot.SnapshotMapper {
     }
 
     @Override
-    public void delete(FileMetaData metaData) throws SnapshotMappingException {
+    public void deleteAll() throws SnapshotMappingException {
         try {
-            String query = "DELETE FROM files WHERE path = '" + metaData.getFilePatch() + "'";
+            String query = "DELETE FROM " + table;
             Statement statement = connection.createStatement();
             statement.executeUpdate(query);
         } catch (SQLException ex) {
@@ -62,13 +95,4 @@ public class DerbySnapshotMapper implements Snapshot.SnapshotMapper {
         }
     }
 
-    public void deleteAll() throws SnapshotMappingException {
-        try {
-            String query = "DELETE FROM files";
-            Statement statement = connection.createStatement();
-            statement.executeUpdate(query);
-        } catch (SQLException ex) {
-            throw new SnapshotMappingException(ex.getMessage());
-        }
-    }
 }
